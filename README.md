@@ -1,7 +1,7 @@
 # 🔞随机Setu下载器🔞
 
-一个简单易用的随机图片下载工具，支持从多个API源获取随机r18图片并下载到本地。
-主界面
+一个简单易用的随机图片下载工具，支持从多个API源获取随机r18图片并下载到本地。   
+主界面   
 <img width="597" height="488" alt="a03a8ffb88e57e536f8f3ee9268d5064" src="https://github.com/user-attachments/assets/d3571e07-7f1e-4916-9f79-a64f0c9be30a" />   
 api设置
 <img width="404" height="447" alt="10e9ee46cb45631c3bb2545d8b5915ab" src="https://github.com/user-attachments/assets/d64edd25-1c6f-4514-a175-c66745591a0e" />   
