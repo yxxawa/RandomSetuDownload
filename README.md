@@ -1,15 +1,7 @@
 # 🔞随机Setu下载器🔞
 
 一个简单易用的随机图片下载工具，支持从多个API源获取随机r18图片并下载到本地。   
-主界面   
-<img width="597" height="488" alt="a03a8ffb88e57e536f8f3ee9268d5064" src="https://github.com/user-attachments/assets/d3571e07-7f1e-4916-9f79-a64f0c9be30a" />   
-api设置
-<img width="404" height="447" alt="10e9ee46cb45631c3bb2545d8b5915ab" src="https://github.com/user-attachments/assets/d64edd25-1c6f-4514-a175-c66745591a0e" />   
-支持本地api(可接入随机图片api实现随机下载,返回类型支持图片和json)
-<img width="774" height="191" alt="ee45a491dc3be9a061f6cb1107485c07" src="https://github.com/user-attachments/assets/59f6e55a-4760-4d87-a15c-3d0ab32b9a2e" />   
-<img width="404" height="447" alt="91a87f18e5658f22027d0a053125c0d6" src="https://github.com/user-attachments/assets/72eabab8-58ae-4e3a-9bf7-aa7dc79d60f8" />   
-
-
+   
 ## 功能特点
 
 - **多API源支持**：内置推荐API和本地API配置
@@ -96,9 +88,12 @@ python main.py
 
 ```
 # 示例API配置
-API名称1: https://api.example.com/image1
-API名称2: https://api.example.com/image2 {描述} | 权重
-!API名称3: https://api.example.com/image3?param=value  # 支持参数
+!exAPI:http://example.com/api|1|{说明}#注释
+!代表支持传入参数
+http/https之前的":"之前即为自定义的api名称（若第一位是"!"则不包括"!"）
+api链接后的"|数字|"为权重，数字/所有api数字之和 即为api随机到的概率
+{}里为api设置界面api名称后括号里的内容，不添加则无括号（用于说明）
+#为注释
 ```
 
 - `!` 前缀表示API支持参数
