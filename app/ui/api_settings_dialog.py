@@ -116,6 +116,26 @@ class ApiSettingsDialog(QDialog):
                 download_service.api_cache_pool.clear()
             logger.info("预加载池和API缓存池已清空")
             
+            # 重新加载API配置到api_service中，确保使用最新的配置
+            source = config_service.get_api_source()
+            api_service.load_apis(source)
+            api_service.apis = config_service.load_api_configs(api_service.apis)
+            api_service.recalculate_weights()
+            logger.info("API配置重新加载成功")
+            
+            # 计算启用的API数量并通知主窗口更新
+            enabled_count = sum(1 for api in api_service.get_apis() if api.enabled)
+            total_count = len(api_service.get_apis())
+            api_info_text = f"已加载 {total_count} 个API，启用 {enabled_count} 个"
+            if source == "local":
+                api_info_text += f"，配置文件: apis.txt"
+            else:
+                api_info_text += "，从推荐API获取"
+            
+            # 通知主窗口更新API信息
+            if hasattr(self.parent(), 'update_api_info'):
+                self.parent().update_api_info.emit(api_info_text)
+            
             self.accept()
             
         except Exception as e:

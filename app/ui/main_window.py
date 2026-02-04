@@ -19,6 +19,7 @@ class MainWindow(QMainWindow):
     update_status = pyqtSignal(str)
     update_progress = pyqtSignal(int)
     show_progress = pyqtSignal(bool)
+    update_download_button = pyqtSignal(str, str)
     
     def __init__(self):
         super().__init__()
@@ -32,6 +33,7 @@ class MainWindow(QMainWindow):
         self.update_status.connect(self._on_update_status)
         self.update_progress.connect(self._on_update_progress)
         self.show_progress.connect(self._on_show_progress)
+        self.update_download_button.connect(self._on_update_download_button)
         
         self._create_ui()
         self._load_config()
@@ -156,6 +158,13 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"显示/隐藏进度条失败: {str(e)}")
     
+    def _on_update_download_button(self, text, style):
+        try:
+            self.download_button.setText(text)
+            self.download_button.setStyleSheet(style)
+        except Exception as e:
+            logger.error(f"更新下载按钮失败: {str(e)}")
+    
     def _init_api_load(self):
         def load_api_task():
             try:
@@ -203,8 +212,7 @@ class MainWindow(QMainWindow):
         if self.download_button.text() == "下载中...":
             return
         
-        self.download_button.setText("下载中...")
-        self.download_button.setStyleSheet("QPushButton { background-color: #45a049; color: white; padding: 20px 40px; }")
+        self.update_download_button.emit("下载中...", "QPushButton { background-color: #45a049; color: white; padding: 20px 40px; }")
         
         def download_task():
             try:
@@ -256,8 +264,7 @@ class MainWindow(QMainWindow):
                 logger.error(f"下载失败: {str(e)}")
                 self.update_status.emit("下载失败")
             finally:
-                self.download_button.setText("随机下载")
-                self.download_button.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; padding: 20px 40px; }")
+                self.update_download_button.emit("随机下载", "QPushButton { background-color: #4CAF50; color: white; padding: 20px 40px; }")
                 self.show_progress.emit(False)
         
         download_thread = threading.Thread(target=download_task)
