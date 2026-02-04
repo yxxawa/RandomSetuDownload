@@ -2,7 +2,7 @@
 
 一个简单易用的随机图片下载工具，支持从多个API源获取随机r18图片并下载到本地。   
 
-##界面
+## 界面
 <img width="604" height="497" alt="image" src="https://github.com/user-attachments/assets/2e886494-00d4-40aa-88d7-0ab7f3e4dfba" />
 <img width="604" height="497" alt="image" src="https://github.com/user-attachments/assets/1ded2b0a-36a4-429c-a12a-bceadeb53eca" />
 
