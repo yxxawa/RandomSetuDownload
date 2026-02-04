@@ -1,14 +1,19 @@
 import logging
 import os
+import datetime
 
 # 日志目录
 LOG_DIR = "logs"
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
+# 获取当前时间作为日志文件名的一部分
+current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+log_filename = f"{current_time}-log.txt"
+
 # 配置日志
 # 创建文件处理器（记录所有级别）
-file_handler = logging.FileHandler(os.path.join(LOG_DIR, "app.log"))
+file_handler = logging.FileHandler(os.path.join(LOG_DIR, log_filename))
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 

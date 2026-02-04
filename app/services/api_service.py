@@ -130,33 +130,44 @@ class ApiService:
             )
             
             apis.append(api_config)
-            total_weight += weight
+            if weight > 0:
+                total_weight += weight
         
         if total_weight > 0:
             for api in apis:
-                api.weight = int(api.weight / total_weight * 100)
+                if api.weight > 0:
+                    api.weight = int(api.weight / total_weight * 100)
         elif apis:
-            weight_per_api = int(100 / len(apis))
-            for api in apis:
-                api.weight = weight_per_api
+            non_zero_weight_apis = [api for api in apis if api.weight > 0]
+            if non_zero_weight_apis:
+                weight_per_api = int(100 / len(non_zero_weight_apis))
+                for api in non_zero_weight_apis:
+                    api.weight = weight_per_api
         
         return apis
     
     def get_random_api(self) -> Optional[ApiConfig]:
         try:
-            enabled_apis = [api for api in self.apis if api.enabled]
-            if not enabled_apis:
-                logger.warning("没有启用的API")
-                return None
+            # 首先尝试获取启用且权重大于0的API
+            enabled_apis = [api for api in self.apis if api.enabled and api.weight > 0]
+            if enabled_apis:
+                weighted_apis = []
+                for api in enabled_apis:
+                    weighted_apis.extend([api] * api.weight)
+                
+                if weighted_apis:
+                    return random.choice(weighted_apis)
+                else:
+                    return random.choice(enabled_apis)
             
-            weighted_apis = []
-            for api in enabled_apis:
-                weighted_apis.extend([api] * api.weight)
+            # 如果没有启用且权重大于0的API，尝试获取任何启用的API
+            enabled_any_weight = [api for api in self.apis if api.enabled]
+            if enabled_any_weight:
+                logger.warning("没有启用且权重大于0的API，使用任意启用的API")
+                return random.choice(enabled_any_weight)
             
-            if weighted_apis:
-                return random.choice(weighted_apis)
-            else:
-                return random.choice(enabled_apis)
+            logger.warning("没有启用的API")
+            return None
         except Exception as e:
             logger.error(f"随机获取API失败: {str(e)}")
             return None
@@ -184,6 +195,40 @@ class ApiService:
             if api.name == name:
                 return api
         return None
+    
+    def recalculate_weights(self) -> List[ApiConfig]:
+        """重新计算API权重"""
+        try:
+            enabled_apis = [api for api in self.apis if api.enabled]
+            if not enabled_apis:
+                logger.warning("没有启用的API")
+                return self.apis
+            
+            # 计算总权重
+            total_weight = sum(api.weight for api in enabled_apis if api.weight > 0)
+            
+            if total_weight > 0:
+                # 按照权重比例重新分配权重
+                for api in self.apis:
+                    if api.enabled and api.weight > 0:
+                        api.weight = int(api.weight / total_weight * 100)
+                    elif not api.enabled:
+                        # 被禁用的API权重设置为0
+                        api.weight = 0
+            else:
+                # 如果所有启用的API权重都为0，平均分配权重
+                weight_per_api = int(100 / len(enabled_apis))
+                for api in self.apis:
+                    if api.enabled:
+                        api.weight = weight_per_api
+                    else:
+                        api.weight = 0
+            
+            logger.info("API权重重新计算完成")
+            return self.apis
+        except Exception as e:
+            logger.error(f"重新计算API权重失败: {str(e)}")
+            return self.apis
 
 # 导出默认API服务实例
 api_service = ApiService()

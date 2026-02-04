@@ -29,7 +29,8 @@ if __name__ == "__main__":
         try:
             from PyQt5.QtWidgets import QMessageBox
             QMessageBox.critical(None, "错误", f"应用启动失败: {str(e)}")
-        except:
+        except Exception as e2:
+            logger.error(f"显示错误消息失败: {str(e2)}")
             pass
         
     finally:

@@ -1,7 +1,7 @@
 import threading
 import time
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QPushButton, QLabel, QRadioButton, QProgressBar,
+    QMainWindow, QPushButton, QLabel, QRadioButton, QProgressBar,
     QVBoxLayout, QHBoxLayout, QFrame, QWidget, QMessageBox
 )
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -162,6 +162,10 @@ class MainWindow(QMainWindow):
                 source = config_service.get_api_source()
                 apis = api_service.load_apis(source)
                 apis = config_service.load_api_configs(apis)
+                # 重新计算API权重
+                apis = api_service.recalculate_weights()
+                # 保存重新计算的权重
+                config_service.save_api_configs(apis)
                 
                 enabled_count = sum(1 for api in apis if api.enabled)
                 total_count = len(apis)
@@ -204,16 +208,8 @@ class MainWindow(QMainWindow):
         
         def download_task():
             try:
-                api_name = download_service.get_random_api_name()
-                if not api_name:
-                    self.download_button.setText("随机下载")
-                    self.download_button.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; padding: 20px 40px; }")
-                    self.update_status.emit("没有可用的API")
-                    return
-                
                 animation_running = True
-                api_config = api_service.get_api_by_name(api_name)
-                api_display_name = api_config.name if api_config else api_name
+                current_display_api = "正在选择API..."
                 
                 self.show_progress.emit(True)
                 self.update_progress.emit(0)
@@ -223,23 +219,29 @@ class MainWindow(QMainWindow):
                     while animation_running and not self.is_closing:
                         try:
                             dots = (dots + 1) % 4
-                            animation_text = f"正在从 {api_display_name} 下载{'.' * dots}"
+                            animation_text = f"正在从 {current_display_api} 下载{'.' * dots}"
                             self.update_status.emit(animation_text)
                             time.sleep(0.5)
-                        except:
+                        except Exception as e:
+                            logger.error(f"下载动画失败: {str(e)}")
                             break
                 
                 def progress_callback(progress, total_size):
                     try:
                         self.update_progress.emit(progress)
-                    except:
+                    except Exception as e:
+                        logger.error(f"进度回调失败: {str(e)}")
                         pass
+                
+                def api_change_callback(new_api_name):
+                    nonlocal current_display_api
+                    current_display_api = new_api_name
                 
                 animation_thread = threading.Thread(target=download_animation)
                 animation_thread.daemon = True
                 animation_thread.start()
                 
-                save_path = download_service.download(api_name, progress_callback)
+                save_path, actual_api_name = download_service.download(progress_callback, api_change_callback)
                 
                 animation_running = False
                 
@@ -275,6 +277,10 @@ class MainWindow(QMainWindow):
             try:
                 apis = api_service.load_apis(new_source)
                 apis = config_service.load_api_configs(apis)
+                # 重新计算API权重
+                apis = api_service.recalculate_weights()
+                # 保存重新计算的权重
+                config_service.save_api_configs(apis)
                 
                 enabled_count = sum(1 for api in apis if api.enabled)
                 total_count = len(apis)

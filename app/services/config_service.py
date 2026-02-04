@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict
 
 from app.config.config_manager import config_manager
 from app.models.api import ApiConfig
@@ -10,7 +10,7 @@ class ConfigService:
     def __init__(self):
         self.config = config_manager.load()
     
-    def load(self) -> dict:
+    def load(self) -> Dict:
         self.config = config_manager.load()
         logger.info("配置加载成功")
         return self.config
@@ -44,7 +44,7 @@ class ConfigService:
         self.config['window_geometry'] = geometry
         return self.save()
     
-    def save_api_configs(self, api_configs: list[ApiConfig]) -> bool:
+    def save_api_configs(self, api_configs: List[ApiConfig]) -> bool:
         source = self.get_api_source()
         api_dict = {}
         
@@ -64,7 +64,7 @@ class ConfigService:
         
         return self.save()
     
-    def load_api_configs(self, api_configs: list[ApiConfig]) -> list[ApiConfig]:
+    def load_api_configs(self, api_configs: List[ApiConfig]) -> List[ApiConfig]:
         source = self.get_api_source()
         config_key = 'recommended_apis' if source == 'recommended' else 'local_apis'
         saved_configs = self.config.get(config_key, {})
@@ -73,14 +73,14 @@ class ConfigService:
             current_key = f"{api.name}_{api.line_number}"
             if current_key in saved_configs:
                 saved_config = saved_configs[current_key]
-                api.weight = saved_config.get('weight', api.weight)
+                # 只加载启用状态和参数，不加载权重，权重应该从文件中读取
                 api.params = saved_config.get('params', api.params)
                 api.enabled = saved_config.get('enabled', api.enabled)
         
         logger.info(f"加载 {len(api_configs)} 个API配置")
         return api_configs
     
-    def get_config(self) -> dict:
+    def get_config(self) -> Dict:
         return self.config
 
 # 导出默认配置服务实例

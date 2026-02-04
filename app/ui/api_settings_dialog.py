@@ -103,14 +103,18 @@ class ApiSettingsDialog(QDialog):
                 if api.name in self.param_inputs:
                     api.params = self.param_inputs[api.name].text().strip()
             
+            # 重新计算API权重
+            apis = api_service.recalculate_weights()
+            
             config_service.save_api_configs(apis)
             logger.info("API配置保存成功")
             
-            # 清空预加载池，确保下次下载使用新的API参数
+            # 清空预加载池和API缓存池，确保下次下载使用新的API参数
             from app.services.download_service import download_service
             with download_service.lock:
                 download_service.preload_pool.clear()
-            logger.info("预加载池已清空")
+                download_service.api_cache_pool.clear()
+            logger.info("预加载池和API缓存池已清空")
             
             self.accept()
             
